@@ -1,0 +1,27 @@
+version: '3'
+services:
+  ls_node:
+    container_name: ls_node
+    image: node:16.18.1
+    restart: always
+    working_dir: /app
+    command: tail -f /dev/null
+    volumes:
+      - ".:/app"
+    depends_on:
+      - ls_database
+  ls_database:
+    image: postgres:15
+    container_name: ls_database
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=ls
+    ports:
+      - '5432:5432'
+    volumes:
+      - ls_data:/var/lib/postgresql/data
+volumes:
+  ls_data: {}
+
