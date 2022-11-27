@@ -24,6 +24,7 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'off',
     'import/prefer-default-export': 'off',
     'max-len': ["error", {"code": 80}],
+    "indent": ["error", 2],
     'class-methods-use-this': 0,
     'no-underscore-dangle': 0
   }

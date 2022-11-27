@@ -1,0 +1,8 @@
+{
+  "database": {
+    "local": {
+      "limit": 100,
+      "url": "postgres://postgres:postgres@ls_database:5432/ls"
+    }
+  }
+}

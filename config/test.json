@@ -1,0 +1,8 @@
+{
+  "database": {
+    "local": {
+      "limit": 5,
+      "url": "dummy"
+    }
+  }
+}

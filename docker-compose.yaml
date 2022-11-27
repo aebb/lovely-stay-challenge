@@ -22,6 +22,7 @@ services:
       - '5432:5432'
     volumes:
       - ls_data:/var/lib/postgresql/data
+      - "./migrations:/app/migrations"
 volumes:
   ls_data: {}
 
