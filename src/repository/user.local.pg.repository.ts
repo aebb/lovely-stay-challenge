@@ -1,11 +1,11 @@
-import databaseInterface from './database.interface';
+import Database from './database.interface';
 import UserRemote from '../model/entity/user.remote.type';
 import UserLocal from '../model/entity/user.local.type';
 import ListUser from '../model/request/list.user.type';
 
 const { PreparedStatement } = require('pg-promise');
 
-export const getUserByName = (database: databaseInterface) => async (username: string): Promise<UserLocal> => database.handler.oneOrNone(new PreparedStatement(
+export const getUserByName = (database: Database) => async (username: string): Promise<UserLocal> => database.handler.oneOrNone(new PreparedStatement(
   {
     name: 'find-user-by-name',
     text: 'SELECT * FROM users WHERE name = ($1)',
@@ -13,8 +13,11 @@ export const getUserByName = (database: databaseInterface) => async (username: s
   },
 ));
 
-export const getUsers = (database: databaseInterface) => async (filters: ListUser): Promise<UserRemote[]> => {
-  let query = 'SELECT DISTINCT users.name, locations.name as location, array_agg(languages.name) as languages '
+export const getUsers = (database: Database) => async (filters: ListUser): Promise<UserRemote[]> => {
+  let query = 'SELECT DISTINCT '
+        + 'users.name, '
+        + 'locations.name as location, '
+        + 'array_agg(languages.name) as languages '
         + 'FROM users '
         + 'LEFT JOIN locations '
         + 'ON users.location_id = locations.id '
@@ -33,7 +36,7 @@ export const getUsers = (database: databaseInterface) => async (filters: ListUse
 
   if (filters.languages) {
     query += database.configs.as.format(
-      'AND languages.name IN ($/languages:csv/)',
+      'AND languages.name IN ($/languages:csv/) ',
       { languages: filters.languages },
     );
   }
@@ -54,33 +57,18 @@ export const getUsers = (database: databaseInterface) => async (filters: ListUse
   ));
 };
 
-export const persist = (database: databaseInterface) => async (user: UserRemote): Promise<UserRemote> => {
-  let locationId = null;
+const persistUserLanguages = async (database: Database, userId: number, languagesIds: number[]): Promise<void> => {
+  const columnSet = new database.configs.helpers.ColumnSet(
+    ['language_id', 'user_id'],
+    { table: 'user_languages' },
+  );
 
-  if (user.location) {
-    locationId = await getLocationId(database, user.location);
-  }
+  const values = languagesIds.map(
+    (element) => ({ language_id: element, user_id: userId }),
+  );
 
-
-  const userId = await database.handler.one({
-    name: 'persist-user',
-    text: 'INSERT INTO users(name, location_id) VALUES ($1, $2) RETURNING id',
-    values: [user.username, locationId],
-  }).then(userId => userId.id);
-
-
-  if (user.languages.length > 0 ) {
-    const languagesIds = await getLanguagesIds(database, user.languages);
-    await persistUserLanguages(database, userId, languagesIds);
-  }
-
-  return user;
-};
-
-const persistUserLanguages = async (database: databaseInterface, userId: number, languagesIds: number[]): Promise<void> => {
-  const columnSet = new database.configs.helpers.ColumnSet(['language_id', 'user_id'], { table: 'user_languages' });
-  const values = languagesIds.map((element) => ({ language_id: element, user_id: userId }));
-  const query = database.configs.helpers.insert(values, columnSet) + 'ON CONFLICT DO NOTHING';
+  const query = database.configs.helpers.insert(values, columnSet)
+    + ' ON CONFLICT DO NOTHING';
 
   return database.handler.none(new PreparedStatement({
     name: 'persist-user-languages',
@@ -88,7 +76,7 @@ const persistUserLanguages = async (database: databaseInterface, userId: number,
   }));
 };
 
-const getLocationId = async (database: databaseInterface, location: string): Promise<number> => {
+const getLocationId = async (database: Database, location: string): Promise<number> => {
   let locationId = await database.handler.oneOrNone(new PreparedStatement(
     {
       name: 'find-location-id',
@@ -110,10 +98,18 @@ const getLocationId = async (database: databaseInterface, location: string): Pro
   return locationId.id;
 };
 
-const getLanguagesIds = async (database: databaseInterface, languages: string[]): Promise<number[]> => {
-  const columnSet = new database.configs.helpers.ColumnSet(['name'], { table: 'languages' });
-  const values = languages.map((element) => ({ name: element }));
-  const query1 = database.configs.helpers.insert(values, columnSet) + 'ON CONFLICT DO NOTHING';
+const getLanguagesIds = async (database: Database, languages: string[]): Promise<number[]> => {
+  const columnSet = new database.configs.helpers.ColumnSet(
+    ['name'],
+    { table: 'languages' },
+  );
+
+  const values = languages.map(
+    (element) => ({ name: element }),
+  );
+
+  const query1 = database.configs.helpers.insert(values, columnSet)
+      + 'ON CONFLICT DO NOTHING';
 
   await database.handler.none(new PreparedStatement({
     name: 'persist-languages-ids',
@@ -131,4 +127,25 @@ const getLanguagesIds = async (database: databaseInterface, languages: string[])
   }));
 
   return locationIds.map((element) => element.id);
+};
+
+export const persist = (database: Database) => async (user: UserRemote): Promise<UserRemote> => {
+  let locationId = null;
+
+  if (user.location) {
+    locationId = await getLocationId(database, user.location);
+  }
+
+  const userId = await database.handler.one({
+    name: 'persist-user',
+    text: 'INSERT INTO users(name, location_id) VALUES ($1, $2) RETURNING id',
+    values: [user.username, locationId],
+  }).then((result) => result.id);
+
+  if (user.languages.length > 0) {
+    const languagesIds = await getLanguagesIds(database, user.languages);
+    await persistUserLanguages(database, userId, languagesIds);
+  }
+
+  return user;
 };

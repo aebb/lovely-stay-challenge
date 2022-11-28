@@ -26,6 +26,9 @@
 - **./test**: application tests
 
 ### Running the infrastructure
+
+Tested on Docker for Linux and Docker Desktop + WSL
+
 ```bash
 #run the infrastructure
 $ docker-compose up -d
@@ -71,16 +74,19 @@ $ node dist/main.js create --username aebb
 $ node dist/main.js list --help
 
 #list users by location
-$ node dist/main.js list --location Portugal
+$ node dist/main.js list --location France
 
 #list users by location & language(s)
-$ node dist/main.js list --location Portugal --language PHP TypeScript Java
+$ node dist/main.js list --location France --language PHP TypeScript Java
 
 #list users with simple pagination
 node dist/main.js list --limit 10 --offset 10
 ```
 
 ### Running the tests
+
+Test coverage at around ~80%
+
 ```bash
 #run tests
 $ npm run test
@@ -90,6 +96,9 @@ $ npm run test:cov
 ```
 
 ### Considerations and Limitations
+
+- The code has a limit of 80 chars per line except for function definitions so its easier to read
+
 
 - Listing the users has a special where clause to make the implementation of the filters cleaner and future proof
 https://w3schools.invisionzone.com/topic/47773-whats-the-use-of-where-true/?do=findComment&comment=264814
@@ -114,4 +123,6 @@ https://stackoverflow.com/a/65525615
 
 - Application logger can be extended to store data on file
 
-- Application logger be used to serve the result to the user
+
+- Application logger can be used to serve the result to the user
+

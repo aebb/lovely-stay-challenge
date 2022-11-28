@@ -1,5 +1,6 @@
 import { InvalidArgumentError } from 'commander';
 import { ErrorMessage } from './error.message';
+
 const config = require('config');
 
 const max = config.get('database.local.limit');

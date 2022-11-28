@@ -1,15 +1,16 @@
 import { Octokit } from 'octokit';
+import * as pgPromise from 'pg-promise';
+import * as winston from 'winston';
 import * as UserRemote from './repository/user.remote.rest.repository';
 import * as UserLocal from './repository/user.local.pg.repository';
-import * as pgPromise from 'pg-promise';
-import * as winston from "winston";
+
 const config = require('config');
 
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
-      winston.format.prettyPrint(),
-      winston.format.json(),
+    winston.format.prettyPrint(),
+    winston.format.json(),
   ),
   transports: [new winston.transports.Console()],
 });
@@ -20,11 +21,13 @@ export let modules = {
   database: {},
   databaseConfigs: {},
   close: () => {},
-  logger: logger,
+  logger,
 };
 
 switch (process.env.NODE_ENV) {
   case 'test': {
+    modules.databaseConfigs = { format: () => '' };
+    modules.database = { oneOrNone: () => {} };
     break;
   }
   default: {
@@ -35,8 +38,8 @@ switch (process.env.NODE_ENV) {
       database: pgp(config.get('database.local.url')),
       databaseConfigs: pgp,
       close: () => pgp.end(),
-      logger: logger,
-  };
+      logger,
+    };
     break;
   }
 }

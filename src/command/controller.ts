@@ -3,9 +3,7 @@ import { create, findAll } from '../service/service';
 import ListUser from '../model/request/list.user.type';
 import CreateUser from '../model/request/create.user.type';
 import { validate, validateWithMax } from '../utils/validator';
-import { modules } from "../dependencies";
-
-const pgp = require('pg-promise')();
+import { modules } from '../dependencies';
 
 export const program = new Command();
 
@@ -18,13 +16,12 @@ program.command('create')
   .description('Create an user based on data from github')
   .requiredOption('-u, --username <string>', 'github username')
   .action((request: CreateUser) => {
-      // console.log('create');
     create(request)
-        // better logging but harder to read
-        //.then((result) => modules.logger.info(result))
-        .then((result) => console.log(result))
-        .catch((error) => modules.logger.error(error.message))
-        .finally(() => modules.close());
+    // better logging but harder to read
+    // .then((result) => modules.logger.info(result))
+      .then((result) => console.log(result))
+      .catch((error) => modules.logger.error(error.message))
+      .finally(() => modules.close());
   });
 
 program.command('list')
@@ -35,9 +32,9 @@ program.command('list')
   .option('-o, --offset <number>', 'offset', validate, '0')
   .action((request: ListUser) => {
     findAll(request)
-        // better logging but harder to read
-        //.then((result) => modules.logger.info(result))
-        .then((result) => console.log(result))
-        .catch((error) => modules.logger.error(error.message))
-        .finally(() => modules.close());
+    // better logging but harder to read
+    // .then((result) => modules.logger.info(result))
+      .then((result) => console.log(result))
+      .catch((error) => modules.logger.error(error.message))
+      .finally(() => modules.close());
   });

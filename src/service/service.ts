@@ -4,10 +4,11 @@ import {
   getUserByNameRemote, getUserByNameLocal, persistUserLocal, listLocal,
 } from '../dependencies';
 import { ErrorMessage } from '../utils/error.message';
+import UserRemote from '../model/entity/user.remote.type';
 
-export const findAll = async (request: ListUser): Promise<any> => listLocal(request);
+export const findAll = async (request: ListUser): Promise<UserRemote[]> => listLocal(request);
 
-export const create = async (request: CreateUser): Promise<any> => {
+export const create = async (request: CreateUser): Promise<UserRemote> => {
   const user = await getUserByNameLocal(request.username);
   if (user) {
     throw new Error(ErrorMessage.userFound);
