@@ -59,28 +59,31 @@ $ npm install
 $ npm run build
 
 #run application
-$ node dist/main.js
+$ node dist/src/main.js
+
+#or
+$ npx ts-node ./src/main.ts
 ```
 
 ### Using the application
 ```bash
 #create a user options list
-$ node dist/main.js create --help
+$ node dist/src/main.js create --help
 
 #create a user from github
-$ node dist/main.js create --username aebb
+$ node dist/src/main.js create --username aebb
 
 #list users options --help
-$ node dist/main.js list --help
+$ node dist/src/main.js list --help
 
 #list users by location
-$ node dist/main.js list --location France
+$ node dist/src/main.js list --location France
 
 #list users by location & language(s)
-$ node dist/main.js list --location France --language PHP TypeScript Java
+$ node dist/src/main.js list --location France --language PHP TypeScript Java
 
 #list users with simple pagination
-node dist/main.js list --limit 10 --offset 10
+node dist/src/main.js list --limit 10 --offset 10
 ```
 
 ### Running the tests
