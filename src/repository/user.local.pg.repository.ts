@@ -5,13 +5,19 @@ import ListUser from '../model/request/list.user.type';
 
 const { PreparedStatement } = require('pg-promise');
 
-export const getUserByName = (database: Database) => async (username: string): Promise<UserLocal> => database.handler.oneOrNone(new PreparedStatement(
-  {
-    name: 'find-user-by-name',
-    text: 'SELECT * FROM users WHERE name = ($1)',
-    values: [username],
-  },
-));
+export const getUserByName = (database: Database) => async (username: string): Promise<UserLocal> => {
+  const query = database.configs.as.format(
+    'SELECT * FROM users WHERE name = $/name/',
+    { name: username },
+  );
+
+  return database.handler.oneOrNone(new PreparedStatement(
+    {
+      name: 'find-user-by-name',
+      text: query,
+    },
+  ));
+};
 
 export const getUsers = (database: Database) => async (filters: ListUser): Promise<UserRemote[]> => {
   let query = 'SELECT DISTINCT '
@@ -76,21 +82,30 @@ const persistUserLanguages = async (database: Database, userId: number, language
   }));
 };
 
-const getLocationId = async (database: Database, location: string): Promise<number> => {
+const obtainLocationId = async (database: Database, location: string): Promise<number> => {
+  const query = database.configs.as.format(
+    'SELECT id FROM locations WHERE name = $/name/',
+    { name: location },
+  );
+
   let locationId = await database.handler.oneOrNone(new PreparedStatement(
     {
       name: 'find-location-id',
-      text: 'SELECT id FROM locations WHERE name = ($1)',
-      values: [location],
+      text: query,
     },
   ));
 
   if (!locationId) {
+    const query2 = database.configs.helpers.insert(
+      { name: location },
+      null,
+      'locations',
+    ) + ' RETURNING id';
+
     locationId = await database.handler.one(new PreparedStatement(
       {
         name: 'persist-location',
-        text: 'INSERT INTO locations(name) VALUES ($1) RETURNING id',
-        values: [location],
+        text: query2,
       },
     ));
   }
@@ -98,7 +113,7 @@ const getLocationId = async (database: Database, location: string): Promise<numb
   return locationId.id;
 };
 
-const getLanguagesIds = async (database: Database, languages: string[]): Promise<number[]> => {
+const obtainLanguageIds = async (database: Database, languages: string[]): Promise<number[]> => {
   const columnSet = new database.configs.helpers.ColumnSet(
     ['name'],
     { table: 'languages' },
@@ -133,17 +148,22 @@ export const persist = (database: Database) => async (user: UserRemote): Promise
   let locationId = null;
 
   if (user.location) {
-    locationId = await getLocationId(database, user.location);
+    locationId = await obtainLocationId(database, user.location);
   }
+
+  const query = database.configs.helpers.insert(
+    { name: user.username, location_id: locationId },
+    null,
+    'users',
+  ) + ' RETURNING id';
 
   const userId = await database.handler.one({
     name: 'persist-user',
-    text: 'INSERT INTO users(name, location_id) VALUES ($1, $2) RETURNING id',
-    values: [user.username, locationId],
+    text: query,
   }).then((result) => result.id);
 
   if (user.languages.length > 0) {
-    const languagesIds = await getLanguagesIds(database, user.languages);
+    const languagesIds = await obtainLanguageIds(database, user.languages);
     await persistUserLanguages(database, userId, languagesIds);
   }
 

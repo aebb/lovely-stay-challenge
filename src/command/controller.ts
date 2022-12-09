@@ -15,7 +15,7 @@ program
 program.command('create')
   .description('Create an user based on data from github')
   .requiredOption('-u, --username <string>', 'github username')
-  .action((request: CreateUser) => {
+  .action(async (request: CreateUser) => {
     create(request)
     // better logging but harder to read
     // .then((result) => modules.logger.info(result))
@@ -30,7 +30,7 @@ program.command('list')
   .option('-lg, --languages <string...>', 'user languages')
   .option('-l, --limit <number>', 'limit', validateWithMax, '50')
   .option('-o, --offset <number>', 'offset', validate, '0')
-  .action((request: ListUser) => {
+  .action(async (request: ListUser) => {
     findAll(request)
     // better logging but harder to read
     // .then((result) => modules.logger.info(result))

@@ -1,18 +1,18 @@
 import { Octokit } from 'octokit';
-import * as pgPromise from 'pg-promise';
-import * as winston from 'winston';
+import { createLogger, format, transports } from 'winston';
 import * as UserRemote from './repository/user.remote.rest.repository';
 import * as UserLocal from './repository/user.local.pg.repository';
 
+const pgPromise = require('pg-promise');
 const config = require('config');
 
-const logger = winston.createLogger({
+const logger = createLogger({
   level: 'info',
-  format: winston.format.combine(
-    winston.format.prettyPrint(),
-    winston.format.json(),
+  format: format.combine(
+    format.prettyPrint(),
+    format.json(),
   ),
-  transports: [new winston.transports.Console()],
+  transports: [new transports.Console()],
 });
 
 export let modules = {
