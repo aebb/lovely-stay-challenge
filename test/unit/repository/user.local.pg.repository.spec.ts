@@ -7,11 +7,18 @@ describe('repository', () => {
         const mock = jest.fn();
         mock.mockResolvedValueOnce({username: 'name'})
 
+        const mockConfigs = jest.fn();
+        mockConfigs.mockResolvedValue('');
+
         const database = {
             handler: {
                 oneOrNone: mock
             },
-            configs: {}
+            configs: {
+                as: {
+                    format: mockConfigs
+                }
+            }
         };
 
         const user = await repository.getUserByName(database)('name');
@@ -52,12 +59,15 @@ describe('repository', () => {
     it('persist user',  async() => {
         const mockOneOrNone = jest.fn();
         const mockOne = jest.fn();
+        const mockConfigs = jest.fn();
+
 
         const locationId = {id:1};
 
         mockOneOrNone.mockResolvedValueOnce(null);
         mockOne.mockResolvedValueOnce(locationId);
         mockOne.mockResolvedValueOnce(locationId);
+        mockConfigs.mockResolvedValue('');
 
         const database = {
             handler: {
@@ -65,6 +75,13 @@ describe('repository', () => {
                 one: mockOne,
             },
             configs: {
+                as: {
+                    format: mockConfigs,
+
+                },
+                helpers: {
+                    insert: mockConfigs
+                }
             }
         };
 

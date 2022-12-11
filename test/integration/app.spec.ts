@@ -68,6 +68,7 @@ describe('AppController', () => {
                 '--aebb'
             ]);
         }).toThrow();
+
         expect(mockExit).toHaveBeenCalledWith(1);
         mockExit.mockRestore();
     })
