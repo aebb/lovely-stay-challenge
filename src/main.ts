@@ -1,4 +1,6 @@
-async function bootstrap() {
-  console.log('foo-bar');
+import { program } from './command/controller';
+
+async function main() {
+  await program.parseAsync(process.argv);
 }
-bootstrap();
+main();

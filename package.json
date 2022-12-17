@@ -13,11 +13,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "commander": "^9.4.1"
+    "commander": "^9.4.1",
+    "config": "^3.3.8",
+    "octokit": "^2.0.10",
+    "pg-promise": "^10.15.3",
+    "winston": "^3.8.2"
   },
   "devDependencies": {
     "@types/jest": "28.1.8",
     "@types/node": "^16.0.0",
+    "@types/sprintf-js": "^1.1.2",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "eslint": "^8.0.1",
